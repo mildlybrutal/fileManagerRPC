@@ -5,6 +5,11 @@ type File struct {
 	Contents []byte
 }
 
+type WriteFileArgs struct {
+	Path    string
+	Content []byte
+}
+
 type FileService interface {
 	ListDirectory(path string, reply *[]string) error
 	ReadFile(path string, reply *[]byte) error

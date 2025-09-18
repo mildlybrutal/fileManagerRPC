@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
+	"net"
+	"net/rpc"
 	"os"
+
 	"github.com/fileManagerRPC/api"
 )
 
 type FileServer struct{}
 
 func (f *FileServer) ListDirectory(path string, reply *[]string) error {
-	entries, err := os.ReadFile(path)
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -35,7 +39,18 @@ func (f *FileServer) ReadFile(path string, reply *[]byte) error {
 }
 
 func (f *FileServer) WriteFile(file api.File, reply *bool) error {
-	err := os.WriteFile(file.Name, file.Content, 0644)
+	err := os.WriteFile(file.Name, file.Contents, 0644)
+	if err != nil {
+		*reply = false
+		return err
+	}
+
+	*reply = true
+	return nil
+}
+
+func (f *FileServer) DeleteFile(path string, reply *bool) error {
+	err := os.Remove(path)
 	if err != nil {
 		*reply = false
 		return err
@@ -46,5 +61,17 @@ func (f *FileServer) WriteFile(file api.File, reply *bool) error {
 }
 
 func main() {
+	fs := new(FileServer)
+	rpc.Register(fs)
 
+	listener, err := net.Listen("tcp", ":8080")
+
+	if err != nil {
+		fmt.Println("Error listening:", err)
+		return
+	}
+	defer listener.Close()
+
+	fmt.Println("Server listening on port 8080")
+	rpc.Accept(listener)
 }
