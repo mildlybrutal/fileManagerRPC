@@ -9,8 +9,10 @@ import (
 	"github.com/fileManagerRPC/api"
 )
 
+// this struct binds all the RPC methods
 type FileServer struct{}
 
+// ls
 func (f *FileServer) ListDirectory(path string, reply *[]string) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
@@ -27,6 +29,8 @@ func (f *FileServer) ListDirectory(path string, reply *[]string) error {
 	return nil
 }
 
+// cat
+
 func (f *FileServer) ReadFile(path string, reply *[]byte) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -38,8 +42,10 @@ func (f *FileServer) ReadFile(path string, reply *[]byte) error {
 	return nil
 }
 
-func (f *FileServer) WriteFile(file api.File, reply *bool) error {
-	err := os.WriteFile(file.Name, file.Contents, 0644)
+// WriteFileArgs cuz it wraps all arguments into a single struct which is in the api.
+
+func (f *FileServer) WriteFile(args api.WriteFileArgs, reply *bool) error {
+	err := os.WriteFile(args.Path, args.Content, 0644)
 	if err != nil {
 		*reply = false
 		return err
@@ -49,6 +55,7 @@ func (f *FileServer) WriteFile(file api.File, reply *bool) error {
 	return nil
 }
 
+// "rm"
 func (f *FileServer) DeleteFile(path string, reply *bool) error {
 	err := os.Remove(path)
 	if err != nil {
